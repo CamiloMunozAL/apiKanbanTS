@@ -161,7 +161,7 @@ This API provides endpoints to manage tasks associated with sections in a databa
 
 ### Update Task
 
-- **URL:** `PUT /tasks/:id_task`
+- **URL:** `PATCH /tasks/:id_task`
 - **Description:** Updates an existing task for the authenticated user.
 - **Request Parameters:**
   - `id_task` (path parameter): The ID of the task to update.
@@ -211,7 +211,7 @@ This API provides endpoints to manage user profiles, including retrieving and up
 
 ### Update User Profile
 
-- **URL:** `PUT /user/profile`
+- **URL:** `PATCH /user/profile`
 - **Description:** Updates the profile of the authenticated user.
 - **Request Body:**
   - `username`: `string`
