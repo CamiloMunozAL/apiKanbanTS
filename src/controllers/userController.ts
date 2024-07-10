@@ -20,6 +20,8 @@ const userSchema = z.object({
     email: z.string().email(),
 });
 
+type User = z.infer<typeof userSchema>;
+
 
 const getUserProfile = async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -39,7 +41,7 @@ const getUserProfile = async (req: Request, res: Response): Promise<Response> =>
 }
 
 const updateUserProfile = async (req: Request, res: Response): Promise<Response> => {
-    const { username, password, email } = req.body;
+    const { username, password, email } = req.body as User;
     if (!userSchema.safeParse(req.body).success) {
         return res.status(400).send("Invalid user data");
     }
@@ -71,5 +73,22 @@ const updateUserProfile = async (req: Request, res: Response): Promise<Response>
     }
 }
 
-export { getUserProfile, updateUserProfile };
+const deleteUserProfile = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        if (!req.user) {
+            return res.status(401).send("Unauthorized");
+        }
+        const userId = req.user.id;
+        const result = await pool.query("DELETE FROM users WHERE id_user = $1 RETURNING *", [userId]);
+        if (result.rowCount === 0) {
+            return res.status(404).send("User not found");
+        }
+        return res.status(200).send(result.rows[0]);
+    } catch (error) {
+        // console.error(error);
+        return res.status(500).send("Internal Server Error");
+    }
+}
+
+export { getUserProfile, updateUserProfile,deleteUserProfile };
 

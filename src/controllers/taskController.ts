@@ -1,7 +1,7 @@
 import { Request,Response } from "express";
 import { pool } from "../db";
 import {z} from 'zod';
-
+import {marked} from 'marked';
 /* modelo de la card o tarea
 CREATE TABLE tasks(
     id_task serial primary key,
@@ -11,6 +11,27 @@ CREATE TABLE tasks(
     foreign key (id_section) references sections(id_section) on delete cascade on update cascade
 );
 */
+
+
+
+const getTask = async (req: Request, res: Response): Promise<Response> => {
+    const {id_task} = req.params;
+    try {
+        if (!req.user) {
+            return res.status(401).send("Unauthorized");
+        }
+        const userId = req.user.id;
+        const result = await pool.query("SELECT * FROM tasks WHERE id_task = $1 AND id_section in (SELECT id_section FROM sections WHERE id_user = $2)", [id_task, userId]);
+        if (result.rowCount === 0) {
+            return res.status(404).send("Task not found");
+        }
+        return res.status(200).send(result.rows[0]);
+    } catch (error) {
+        // console.error(error);
+        return res.status(500).send("Internal Server Error");
+    }
+}
+
 
 const getAllTasks = async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -134,7 +155,7 @@ const deleteTask = async (req: Request, res: Response): Promise<Response> => {
         if (taskResult.rowCount === 0) {
             return res.status(404).send("Task not found");
         }
-        const result = await pool.query("DELETE FROM tasks WHERE id_task = $1", [id_task]);
+        await pool.query("DELETE FROM tasks WHERE id_task = $1", [id_task]);
         return res.status(204).send();
     } catch (error) {
         // console.error(error);
@@ -142,4 +163,4 @@ const deleteTask = async (req: Request, res: Response): Promise<Response> => {
     }
 }
 
-export {getAllTasks,createTask,updateTask,deleteTask};
+export {getAllTasks,createTask,updateTask,deleteTask,getTask};
